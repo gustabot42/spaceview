@@ -4,7 +4,15 @@ spaceview
 
 
 Father app dependency in reusable aplications.
-object and context access using namespaces and class base views
+
+Solution:
+
+Url declaration using namespace
+
+Aplication namespace (app_name) data declaration using Class Base Views
+
+And this aplication to glue them
+
 
 
 Install
@@ -67,7 +75,8 @@ Usage
 -----
 
 
-Read namespace url in django docs ;)
+Read namespace url in django docs ;) https://docs.djangoproject.com/en/dev/topics/http/urls
+
 model (or app_namespace if declared) most be equal to app_name used in urls
 
     # myapp/urls.py
@@ -93,16 +102,18 @@ Now you can access to space objects in reusable app views
 	@method_decorator(login_required)
 	def dispatch(self, request, *args, **kwargs):
 	    spaces = request.spaces
-	    space = spaces[self.app_name].object
+	    myapp_object = spaces[self.app_name].object
 	    
-	    if not space.foo_permission():
+	    if not myapp_object.foo_permission():
 		HttpResponseForbidden()
 	    
 	    return super(MemberUpdateSetView, self).dispatch(request, *args, **kwargs)
 
 
 Spaces context variables will be automaticly added
+
 context variable "current_app" will be added equal to namespace
+
 
 Variables
 ---------
@@ -117,3 +128,10 @@ request.space
 
 request.spaces - dictionary
     aplication namespaces (app_name) : SpaceView Object
+
+
+Usage Example
+-------------
+
+
+https://github.com/gustavodiazjaimes/narrat
