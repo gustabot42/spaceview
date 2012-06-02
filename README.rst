@@ -3,6 +3,10 @@ spaceview
 =========
 
 
+Father app dependency in reusable aplications.
+object and context access using namespaces and class base views
+
+
 Install
 -------
 
@@ -24,7 +28,7 @@ add the middleware
         "spaceview.middleware.SpaceviewMiddleware"
     ]
 
-create the variable SPACEVIEW_SPACES as a list of space views
+create the variable SPACEVIEW_SPACES as a list of SpaceViews clases
 
     # settings.py
     ...
@@ -37,16 +41,16 @@ create the variable SPACEVIEW_SPACES as a list of space views
     ...
 
 
-Create the Space View in your reusable app and treat it like a Detail View (Class Base View)
+Create the SpaceView Class in your reusable app and treat it like a Detail View (Class Base View)
 
     # myapp/views.py
     from __future__ import absolute_import
     from spaceview.views import SpaceView
     from .models import Myapp
     
-    class ProjectSpace(SpaceView):
+    class MyappSpace(SpaceView):
         
-        namespace = 'myapp'
+        app_namespace = 'myapp'
         model = Myapp
         context_object_name = "myapp"
         slug_url_kwarg = 'myapp_slug'
@@ -64,12 +68,13 @@ Usage
 
 
 Read namespace url in django docs ;)
+model (or app_namespace if declared) most be equal to app_name used in urls
 
     # myapp/urls.py
     ...
     urlpatterns = patterns('',
         ...
-        url(r"^(?P<myapp_slug>[-\w]+)/reusableapp/", include(ReusableAapp, namespace='myapp', app_name='reusableapp')),
+        url(r"^(?P<myapp_slug>[-\w]+)/reusableapp/", include(ReusableAapp, namespace='myapp_instance', app_name='myapp')),
     )
 
 Now you can access to space objects in reusable app views
@@ -79,25 +84,36 @@ Now you can access to space objects in reusable app views
     
     class ReusableappView(FooView):
     
-    model = ReusableApp
-    context_object_name = "reusableapp"
-    template_name = "reusableapp/reusableapp_foo.html"
+	model = ReusableApp
+	context_object_name = "reusableapp"
+	template_name = "reusableapp/reusableapp_foo.html"
+	app_name = "myapp"
     
     
-    @method_decorator(login_required)
-    def dispatch(self, request, *args, **kwargs):
-        space = request.space.object
-        
-        if not space.foo_permission():
-            HttpResponseForbidden()
-        
-        return super(MemberUpdateSetView, self).dispatch(request, *args, **kwargs)
+	@method_decorator(login_required)
+	def dispatch(self, request, *args, **kwargs):
+	    spaces = request.spaces
+	    space = spaces[self.app_name].object
+	    
+	    if not space.foo_permission():
+		HttpResponseForbidden()
+	    
+	    return super(MemberUpdateSetView, self).dispatch(request, *args, **kwargs)
 
+
+Spaces context variables will be automaticly added
+context variable "current_app" will be added equal to namespace
 
 Variables
 ---------
 
 
-        request.resolve, url resolve object
-        request.space, space-view object relative to last namespace resolve in url
-        request.spaces, dict of namespace an space-view object
+request.resolve
+    url resolve object plus app_dict variable
+
+request.space
+    spaceview object relative to last namespace resolve in url
+    give access to object and context variable
+
+request.spaces - dictionary
+    aplication namespaces (app_name) : SpaceView Object
