@@ -42,7 +42,6 @@ class SpaceView(DetailView):
         
         def space(request, *args, **kwargs):
             self = cls(**initkwargs)
-            
             self.request = request
             self.args = args
             self.kwargs = kwargs
